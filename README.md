@@ -26,7 +26,7 @@ The id of the project to connect to. Default: `"website"`
 
 ## `image-uri`
 
-The uri of the container image to build the block from. Default: `"ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app:latest"`
+The uri of the container image to build the block from. Default: `"ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app:latest"` e.g. `"ghcr.io/contensis/leif/master/app:latest"`
 
 ## `auto-release`
 
