@@ -1,4 +1,4 @@
-# Contensis cli CMS action
+# Contensis block push action
 
 This action allows you to push a block to Contensis CMS in your own Github Actions
 
