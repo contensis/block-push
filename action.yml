@@ -62,7 +62,7 @@ runs:
         client-id: ${{ inputs.client-id }}
         shared-secret: ${{ inputs.shared-secret }}
         command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ github.ref_name }}${{ inputs.auto-release == 'true' && ' --release' || '' }} --provider Github --repository-url ${{ github.server_url }}/${{ github.repository }}.git --commit-id ${{ github.sha }} --commit-message "${{ github.event.head_commit.message }}" --commit-datetime ${{ github.event.head_commit.timestamp }} --author-email ${{ github.event.head_commit.author.email }} --committer-email ${{ github.event.head_commit.committer.email }}
-        cli-version: release
+        cli-version: 1.0.0-beta.44
         cli-splash: true
 
     - name: Set output variables
