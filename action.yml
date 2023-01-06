@@ -1,4 +1,4 @@
-name: "Contensis Block push action"
+name: "Contensis Block Push"
 description: "A GitHub Action for pushing a Block to a Contensis CMS"
 author: "Zengenti"
 
