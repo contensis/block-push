@@ -1,5 +1,5 @@
-name: "Contensis block push action"
-description: "A GitHub Action for pushing a block to Contensis CMS"
+name: "Contensis Block push action"
+description: "A GitHub Action for pushing a Block to a Contensis CMS"
 author: "Zengenti"
 
 branding:
@@ -8,35 +8,35 @@ branding:
 
 inputs:
   alias:
-    description: "The Contensis cloud alias to connect to"
+    description: "The Contensis cloud alias to connect to."
     required: true
   project-id:
-    description: "The id of the project to connect to"
+    description: "The id of the project to connect to."
     required: false
     default: website
   client-id:
-    description: "Client id to connect to the supplied alias"
+    description: "Client id to connect to the supplied alias."
     required: true
   shared-secret:
-    description: "Shared secret to use with the supplied client id"
+    description: "Shared secret to use with the supplied client id."
     required: true
   block-id:
-    description: "The id of the block to push to"
+    description: "The id of the block to push to."
     required: true
   image-uri:
-    description: "The repository uri of the container image to build the block from"
+    description: "The repository URI of the container image to build the block from"
     required: false
     default: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app:latest
   auto-release:
-    description: "Whether to release the block upon successful push"
+    description: "Whether to release the Block upon successful push"
     required: false
     default: false
   tag-repo:
-    description: "Whether to push a tag to the git repo upon successful block push"
+    description: "Whether to push a tag to the git repo upon successful Block push"
     required: false
     default: false
   git-token:
-    description: "The git token from secrets to use when tagging the git repo upon successful block push"
+    description: "The git token from secrets to use when tagging the git repo upon successful Block push"
     required: false
     default: ${{ github.token }}
   cli-version:
@@ -45,7 +45,7 @@ inputs:
 
 outputs:
   block-version:
-    description: "The version number of the pushed block"
+    description: "The version number of the pushed Block"
     value: ${{ steps.set.outputs.block-version }}
   git-tag:
     description: "The pushed tag name if tag-repo input is true"
@@ -75,7 +75,7 @@ runs:
         VERSION_NO=$(echo -e ${{ steps.cli.outputs.command-output }} | jq .version.versionNo)
         echo "Setting block-version: $VERSION_NO"
         if [ -z "$VERSION_NO" ]; then
-          echo "Error Next block version was not created"
+          echo "Error next Block version was not created"
           exit 1
         fi
         echo "block-version=$VERSION_NO" >> $GITHUB_OUTPUT
