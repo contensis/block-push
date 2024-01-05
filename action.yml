@@ -27,8 +27,12 @@ inputs:
     description: "The repository URI of the container image to build the block from"
     required: false
     default: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app:latest
-  auto-release:
+  release:
     description: "Whether to release the Block upon successful push"
+    required: false
+    default: false
+  auto-release:
+    description: "Whether to release the Block upon successful push (deprecated: see 'release')"
     required: false
     default: false
   tag-repo:
@@ -64,7 +68,7 @@ runs:
         project-id: ${{ inputs.project-id}}
         client-id: ${{ inputs.client-id }}
         shared-secret: ${{ inputs.shared-secret }}
-        command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ github.ref_name }}${{ inputs.auto-release == 'true' && ' --release' || '' }} --provider Github --repository-url ${{ github.server_url }}/${{ github.repository }}.git --commit-id ${{ github.sha }} --commit-message "${{ github.event.head_commit.message }}" --commit-datetime ${{ github.event.head_commit.timestamp }} --author-email ${{ github.event.head_commit.author.email }} --committer-email ${{ github.event.head_commit.committer.email }}
+        command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ github.ref_name }}${{ (inputs.release == 'true' || inputs.auto-release == 'true') && ' --release' || '' }} --provider Github --repository-url ${{ github.server_url }}/${{ github.repository }}.git --commit-id ${{ github.sha }} --commit-message "${{ github.event.head_commit.message }}" --commit-datetime ${{ github.event.head_commit.timestamp }} --author-email ${{ github.event.head_commit.author.email }} --committer-email ${{ github.event.head_commit.committer.email }}
         cli-version: ${{ inputs.cli-version }}
         cli-splash: true
 

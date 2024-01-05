@@ -28,7 +28,7 @@ The id of the project to connect to. Default: `"website"`
 
 The uri of the container image to build the block from. Default: `"ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app:latest"` e.g. `"ghcr.io/contensis/leif/master/app:latest"`
 
-## `auto-release`
+## `release`
 
 Whether to release the block upon successful push. Default: `false`
 
@@ -74,7 +74,7 @@ Push a block called `name-of-block`, set it to release automatically, and push a
   uses: contensis/block-push@v1
   with:
     block-id: name-of-block
-    auto-release: true
+    release: true
     alias: example-dev
     project-id: website
     client-id: ${{ secrets.CONTENSIS_CLIENT_ID }}
