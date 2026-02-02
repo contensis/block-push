@@ -28,9 +28,17 @@ The id of the project to connect to. Default: `"website"`
 
 The uri of the container image to build the block from. Default: `"ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app:latest"` e.g. `"ghcr.io/contensis/leif/master/app:latest"`
 
+## `branch`
+
+The branch name in Contensis to push the block to. Default: `${{ github.ref_name }}`
+
 ## `release`
 
 Whether to release the block upon successful push. Default: `false`
+
+## `make-live`
+
+Whether to make the block live upon successful push. Default: `false`
 
 ## `tag-repo`
 
@@ -38,7 +46,7 @@ Whether to push a tag to the git repo upon successful block push. Default: `fals
 
 ## `git-token`
 
-The git token from secrets to use when pushing to the git repo upon successful block push. Default: ${{ github.token }}
+The git token from secrets to use when pushing to the git repo upon successful block push. Default: `${{ github.token }}`
 
 ## Outputs
 
