@@ -92,7 +92,7 @@ runs:
         fi
         echo "block-version=$VERSION_NO" >> $GITHUB_OUTPUT
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         token: ${{ inputs.git-token }}
       if: inputs.tag-repo == 'true' && (github.ref_name == 'master' || github.ref_name == 'main') && steps.set.outputs.block-version != ''
