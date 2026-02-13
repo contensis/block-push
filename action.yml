@@ -82,8 +82,10 @@ runs:
     - name: Set output variables
       id: set
       shell: bash
+      env:
+        COMMAND_OUTPUT: ${{ steps.cli.outputs.command-output }}
       run: |
-        VERSION_NO=$(echo -e ${{ steps.cli.outputs.command-output }} | jq .version.versionNo)
+        VERSION_NO=$(echo "$COMMAND_OUTPUT" | jq .version.versionNo)
         echo "Setting block-version: $VERSION_NO"
         if [ -z "$VERSION_NO" ]; then
           echo "Error next Block version was not created"
