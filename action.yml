@@ -69,8 +69,7 @@ runs:
   steps:
     - name: Pull Contensis CLI docker image and run commands
       id: cli
-      uses: contensis/cli-action@v1
-      # uses: ./.github/actions/cli-action
+      uses: contensis/cli-action@docker-version-fix
       with:
         alias: ${{ inputs.alias }}
         project-id: ${{ inputs.project-id}}
