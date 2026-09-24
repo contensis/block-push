@@ -67,9 +67,10 @@ runs:
   using: "composite"
 
   steps:
-    # Commit message travels as CONTENSIS_COMMIT_MESSAGE env var, never in the command
-    # string (issue #2): env is a safe channel that cli-action forwards into
-    # the cli container, where the cli reads this.
+    # Commit provenance travels as CONTENSIS_* env vars, never in the command
+    # string (issue #2): cli-action tokenises the command without shell
+    # expansion, and forwards only CONTENSIS_*/GITHUB_* env into the cli
+    # container, where the cli reads these.
     - name: Export commit provenance
       shell: bash
       env:
@@ -100,12 +101,12 @@ runs:
         # remain set for later steps of the calling job - normal composite
         # behaviour, and all describe this job's single commit.)
         {
-          echo "REPOSITORY_URL=$REPOSITORY_URL"
-          echo "COMMIT_ID=$COMMIT_ID"
+          echo "CONTENSIS_REPOSITORY_URL=$REPOSITORY_URL"
+          echo "CONTENSIS_COMMIT_ID=$COMMIT_ID"
           echo "CONTENSIS_COMMIT_MESSAGE=$CONTENSIS_COMMIT_MESSAGE"
-          echo "COMMIT_DATETIME=$COMMIT_DATETIME"
-          echo "AUTHOR_EMAIL=$AUTHOR_EMAIL"
-          echo "COMMITTER_EMAIL=$COMMITTER_EMAIL"
+          echo "CONTENSIS_COMMIT_DATETIME=$COMMIT_DATETIME"
+          echo "CONTENSIS_AUTHOR_EMAIL=$AUTHOR_EMAIL"
+          echo "CONTENSIS_COMMITTER_EMAIL=$COMMITTER_EMAIL"
         } >> "$GITHUB_ENV"
 
     - name: Pull Contensis CLI docker image and run commands
@@ -116,7 +117,7 @@ runs:
         project-id: ${{ inputs.project-id}}
         client-id: ${{ inputs.client-id }}
         shared-secret: ${{ inputs.shared-secret }}
-        command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ inputs.branch }}${{ (inputs.release == 'true' || inputs.auto-release == 'true') && ' --release' || '' }}${{ (inputs.make-live == 'true') && ' --make-live' || '' }} --provider Github --repository-url $REPOSITORY_URL --commit-id $COMMIT_ID --commit-datetime $COMMIT_DATETIME --author-email $AUTHOR_EMAIL --committer-email $COMMITTER_EMAIL
+        command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ inputs.branch }}${{ (inputs.release == 'true' || inputs.auto-release == 'true') && ' --release' || '' }}${{ (inputs.make-live == 'true') && ' --make-live' || '' }} --provider Github
         cli-version: ${{ inputs.cli-version }}
         cli-splash: true
 
