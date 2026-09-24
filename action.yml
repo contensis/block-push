@@ -127,7 +127,16 @@ runs:
       env:
         COMMAND_OUTPUT: ${{ steps.cli.outputs.command-output }}
       run: |
-        VERSION_NO=$(echo "$COMMAND_OUTPUT" | jq .version.versionNo)
+        # Parse with python3 (already required by cli-action) rather than jq, which
+        # self-hosted runners may lack. Prints "" for missing/invalid output so the
+        # -z check below catches it.
+        VERSION_NO=$(printf '%s' "$COMMAND_OUTPUT" | python3 -c '
+        import json, sys
+        try:
+            print((json.load(sys.stdin).get("version") or {}).get("versionNo") or "")
+        except Exception:
+            print("")
+        ')
         echo "Setting block-version: $VERSION_NO"
         if [ -z "$VERSION_NO" ]; then
           echo "Error next Block version was not created"
