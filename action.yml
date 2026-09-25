@@ -67,6 +67,48 @@ runs:
   using: "composite"
 
   steps:
+    # Commit provenance travels as CONTENSIS_* env vars, never in the command
+    # string (issue #2): cli-action tokenises the command without shell
+    # expansion, and forwards only CONTENSIS_*/GITHUB_* env into the cli
+    # container, where the cli reads these.
+    - name: Export commit provenance
+      shell: bash
+      env:
+        REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}.git
+        COMMIT_ID: ${{ github.sha }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        COMMIT_DATETIME: ${{ github.event.head_commit.timestamp }}
+        AUTHOR_EMAIL: ${{ github.event.head_commit.author.email }}
+        COMMITTER_EMAIL: ${{ github.event.head_commit.committer.email }}
+      run: |
+        # workflow_dispatch runs have no push payload; use the checked-out
+        # commit (that is the commit the workflow ran on), when there is one.
+        if git rev-parse --verify -q HEAD >/dev/null 2>&1; then
+          COMMIT_MESSAGE="${COMMIT_MESSAGE:-$(git log -1 --format=%B)}"
+          COMMIT_DATETIME="${COMMIT_DATETIME:-$(git log -1 --format=%cI)}"
+          AUTHOR_EMAIL="${AUTHOR_EMAIL:-$(git log -1 --format=%aE)}"
+          COMMITTER_EMAIL="${COMMITTER_EMAIL:-$(git log -1 --format=%cE)}"
+        fi
+
+        # Flatten real newlines: GITHUB_ENV stores one NAME=VALUE per line, and
+        # the API has only ever received single-line messages (GitLab's arrive
+        # escaped and the cli flattens those) - so keep parity.
+        CONTENSIS_COMMIT_MESSAGE="${COMMIT_MESSAGE//$'\r'/}"
+        CONTENSIS_COMMIT_MESSAGE="${CONTENSIS_COMMIT_MESSAGE//$'\n'/ }"
+
+        # Export everything unconditionally; empty values are skipped by the
+        # cli, which then falls back to its own CI defaults. (These vars also
+        # remain set for later steps of the calling job - normal composite
+        # behaviour, and all describe this job's single commit.)
+        {
+          echo "CONTENSIS_REPOSITORY_URL=$REPOSITORY_URL"
+          echo "CONTENSIS_COMMIT_ID=$COMMIT_ID"
+          echo "CONTENSIS_COMMIT_MESSAGE=$CONTENSIS_COMMIT_MESSAGE"
+          echo "CONTENSIS_COMMIT_DATETIME=$COMMIT_DATETIME"
+          echo "CONTENSIS_AUTHOR_EMAIL=$AUTHOR_EMAIL"
+          echo "CONTENSIS_COMMITTER_EMAIL=$COMMITTER_EMAIL"
+        } >> "$GITHUB_ENV"
+
     - name: Pull Contensis CLI docker image and run commands
       id: cli
       uses: contensis/cli-action@v1
@@ -75,7 +117,7 @@ runs:
         project-id: ${{ inputs.project-id}}
         client-id: ${{ inputs.client-id }}
         shared-secret: ${{ inputs.shared-secret }}
-        command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ inputs.branch }}${{ (inputs.release == 'true' || inputs.auto-release == 'true') && ' --release' || '' }}${{ (inputs.make-live == 'true') && ' --make-live' || '' }} --provider Github --repository-url ${{ github.server_url }}/${{ github.repository }}.git --commit-id ${{ github.sha }} --commit-message "${{ github.event.head_commit.message }}" --commit-datetime ${{ github.event.head_commit.timestamp }} --author-email ${{ github.event.head_commit.author.email }} --committer-email ${{ github.event.head_commit.committer.email }}
+        command: push block ${{ inputs.block-id }} ${{ inputs.image-uri }} ${{ inputs.branch }}${{ (inputs.release == 'true' || inputs.auto-release == 'true') && ' --release' || '' }}${{ (inputs.make-live == 'true') && ' --make-live' || '' }} --provider Github
         cli-version: ${{ inputs.cli-version }}
         cli-splash: true
 
@@ -85,7 +127,16 @@ runs:
       env:
         COMMAND_OUTPUT: ${{ steps.cli.outputs.command-output }}
       run: |
-        VERSION_NO=$(echo "$COMMAND_OUTPUT" | jq .version.versionNo)
+        # Parse with python3 (already required by cli-action) rather than jq, which
+        # self-hosted runners may lack. Prints "" for missing/invalid output so the
+        # -z check below catches it.
+        VERSION_NO=$(printf '%s' "$COMMAND_OUTPUT" | python3 -c '
+        import json, sys
+        try:
+            print((json.load(sys.stdin).get("version") or {}).get("versionNo") or "")
+        except Exception:
+            print("")
+        ')
         echo "Setting block-version: $VERSION_NO"
         if [ -z "$VERSION_NO" ]; then
           echo "Error next Block version was not created"
@@ -93,7 +144,7 @@ runs:
         fi
         echo "block-version=$VERSION_NO" >> $GITHUB_OUTPUT
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         token: ${{ inputs.git-token }}
       if: inputs.tag-repo == 'true' && (github.ref_name == 'master' || github.ref_name == 'main') && steps.set.outputs.block-version != ''
