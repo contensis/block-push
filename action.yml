@@ -53,7 +53,7 @@ inputs:
     default: ${{ github.token }}
   cli-version:
     description: "Optional: pull cli from specified tag. Default: release"
-    default: latest
+    default: release
 
 outputs:
   block-version:
