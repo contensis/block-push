@@ -111,7 +111,7 @@ runs:
 
     - name: Pull Contensis CLI docker image and run commands
       id: cli
-      uses: contensis/cli-action@fix-shell-parsing
+      uses: contensis/cli-action@v1
       with:
         alias: ${{ inputs.alias }}
         project-id: ${{ inputs.project-id}}
